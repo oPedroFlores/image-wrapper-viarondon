@@ -122,3 +122,8 @@
   width: 100px;
   height: 100px;
 }
+
+.dragging {
+  border: 2px dashed #4a90e2;
+  background-color: rgba(74, 144, 226, 0.1);
+}

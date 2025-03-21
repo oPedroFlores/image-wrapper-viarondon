@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import styles from "../../css/imagePasteArea.module.css";
 import { FaTrash } from "react-icons/fa";
 import Masonry from "react-masonry-css";
@@ -10,6 +10,8 @@ const ImagePasteArea = () => {
   const [layoutStyle, setLayoutStyle] = useState("grid");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dropAreaRef = useRef(null);
 
   const handlePaste = (event) => {
     const items = event.clipboardData.items;
@@ -78,10 +80,52 @@ const ImagePasteArea = () => {
     500: 1,
   };
 
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOverUpload = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  const handleDropUpload = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.type.startsWith("image/")) {
+          const imageUrl = URL.createObjectURL(file);
+          setImages((prevImages) => [...prevImages, imageUrl]);
+        }
+      }
+    }
+  };
+
   return (
     <div className={styles.container} onPaste={handlePaste}>
-      <div className={styles.pasteArea}>
-        Cole suas imagens aqui ou
+      <div 
+        className={`${styles.pasteArea} ${isDragging ? styles.dragging : ''}`}
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOverUpload}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDropUpload}
+        ref={dropAreaRef}
+      >
+        Arraste e solte imagens aqui, cole suas imagens ou
         <label htmlFor="fileUpload" className={styles.uploadLabel}>
           selecione um arquivo
         </label>
